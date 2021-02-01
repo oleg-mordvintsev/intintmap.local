@@ -70,7 +70,7 @@ class IntIntMap
     public function get(int $key): ?int
     {
         $value = shmop_read($this->id, $key * $this->bytes, $this->bytes);
-        if (!is_null($value)) $value = intval($value);
+        if (trim($value) !== "") $value = intval($value); else $value = null;
         return $value;
     }
 
