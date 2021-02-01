@@ -75,4 +75,4 @@ foreach ($generator as $key => $value) {
     $preValue = $value;
 }
 
-echo "Тест пройден!<br>";
+echo "Тест 100000 случайных ключей и значений пройден!<br>";
