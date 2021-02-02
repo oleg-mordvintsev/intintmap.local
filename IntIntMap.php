@@ -88,7 +88,7 @@ class IntIntMap
      * @param $shm_id
      * @return bool
      */
-    private function validType(&$shm_id): bool
+    private function validType($shm_id): bool
     {
         $type = gettype($shm_id);
         if ('resource' === $type || 'shmop' === $type) {
