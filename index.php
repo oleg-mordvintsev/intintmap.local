@@ -40,7 +40,7 @@ $shmopSize = 1024 ** 3; // 1Gb
 $shmop = shmop_open($shmopKey, 'c', $shmopPermissions, $shmopSize);
 
 // Проверка
-if ($shmop === false) {
+if (false === $shmop) {
     echo "Не возможно получить доступ к памяти.";
     exit;
 }
@@ -55,7 +55,7 @@ $shmopObj = new IntIntMap($shmop, shmop_size($shmop));
 ### ТЕСТИРОВАНИЕ ###
 
 // Генерируем случайные 100 000 значений
-$generator = (function() use($shmopObj){
+$generator = (function () use ($shmopObj) {
     for ($n = 0; 100000 > $n; $n++) {
         $key = rand(0, $shmopObj->getMaxKey());
         $value = rand(0, 4294967296);
@@ -67,7 +67,7 @@ $generator = (function() use($shmopObj){
 foreach ($generator as $key => $value) {
     $shmopObj->put($key, $value);
     $item = $shmopObj->get($key);
-    if ($item != $value) {
+    if ($item !== $value) {
         echo "Ошибка, проверка не пройдена. Ключ: {$key}. Значение в ОЗУ: {$item}. Значение в массиве: {$value}.<br>";
         exit;
     }
@@ -75,4 +75,4 @@ foreach ($generator as $key => $value) {
     $preValue = $value;
 }
 
-echo "Тест 100000 случайных ключей и значений пройден!<br>";
+echo "Тест 100 000 случайных ключей и значений пройден!<br>";

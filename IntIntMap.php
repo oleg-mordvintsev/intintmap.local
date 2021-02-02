@@ -32,16 +32,15 @@ class IntIntMap
 
     /**
      * Кол-во байт на единицу данных
-     * @var int
      */
-    private $bytes = 10;
+    private const BYTES = 10;
 
     /**
      * IntIntMap constructor.
      * @param $shm_id
      * @param int $size
      */
-    public function __construct($shm_id, int $size) // Убрал resource - смотрите https://www.php.net/manual/ru/function.shmop-open.php#refsect1-function.shmop-open-changelog
+    public function __construct($shm_id, int $size) // Убрал resource, по рекомендации: https://www.php.net/manual/ru/function.shmop-open.php#refsect1-function.shmop-open-changelog
     {
         if (!$this->validType($shm_id)) {
             echo "Передан не известный тип, вместо 'resource' или 'shmop'.";
@@ -60,9 +59,10 @@ class IntIntMap
      */
     public function put(int $key, int $value): ?int
     {
-        $old = $this->get($key); // Нарушает SOLID (S), но требуется для задачи.
-        $value = str_pad((string)$value, $this->bytes, "0", STR_PAD_LEFT);
-        shmop_write($this->id, $value, $key * $this->bytes);
+        $old = $this->get($key); // На мой взгляд, нарушает SOLID (S), но требуется для бизнес задачи.
+        $value = str_pad((string)$value, self::BYTES, '0', STR_PAD_LEFT);
+        shmop_write($this->id, $value, $key * self::BYTES);
+
         return $old;
     }
 
@@ -73,12 +73,13 @@ class IntIntMap
      */
     public function get(int $key): ?int
     {
-        $value = shmop_read($this->id, $key * $this->bytes, $this->bytes);
+        $value = shmop_read($this->id, $key * self::BYTES, self::BYTES);
         if ('' !== trim($value)) {
-            $value = intval($value);
+            $value = (int)$value;
         } else {
             $value = null;
         }
+
         return $value;
     }
 
@@ -93,6 +94,7 @@ class IntIntMap
         if ('resource' === $type || 'shmop' === $type) {
             return true;
         }
+
         return false;
     }
 
@@ -101,7 +103,7 @@ class IntIntMap
      */
     private function calculateMaxKey(): void
     {
-        $this->maxKey = intdiv(shmop_size($this->id), $this->bytes) - 1;
+        $this->maxKey = intdiv(shmop_size($this->id), self::BYTES) - 1;
     }
 
     /**
