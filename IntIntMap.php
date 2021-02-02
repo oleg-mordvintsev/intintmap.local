@@ -43,9 +43,13 @@ class IntIntMap
      */
     public function __construct($shm_id, int $size) // Убрал resource - смотрите https://www.php.net/manual/ru/function.shmop-open.php#refsect1-function.shmop-open-changelog
     {
+        if (!$this->validType($shm_id)) {
+            echo "Передан не известный тип, вместо 'resource' или 'shmop'.";
+            exit;
+        }
         $this->id = $shm_id;
         $this->size = $size;
-        $this->maxKey = intdiv(shmop_size($this->id), $this->bytes) - 1;
+        $this->calculateMaxKey();
     }
 
     /**
@@ -56,7 +60,7 @@ class IntIntMap
      */
     public function put(int $key, int $value): ?int
     {
-        $old = $this->get($key);
+        $old = $this->get($key); // Нарушает SOLID (S), но требуется для задачи.
         $value = str_pad((string)$value, $this->bytes, "0", STR_PAD_LEFT);
         shmop_write($this->id, $value, $key * $this->bytes);
         return $old;
@@ -70,8 +74,34 @@ class IntIntMap
     public function get(int $key): ?int
     {
         $value = shmop_read($this->id, $key * $this->bytes, $this->bytes);
-        if (trim($value) !== "") $value = intval($value); else $value = null;
+        if ('' !== trim($value)) {
+            $value = intval($value);
+        } else {
+            $value = null;
+        }
         return $value;
+    }
+
+    /**
+     * Валидация типа
+     * @param $shm_id
+     * @return bool
+     */
+    private function validType(&$shm_id): bool
+    {
+        $type = gettype($shm_id);
+        if ('resource' === $type || 'shmop' === $type) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Вычисляем максимальный ключ
+     */
+    private function calculateMaxKey(): void
+    {
+        $this->maxKey = intdiv(shmop_size($this->id), $this->bytes) - 1;
     }
 
     /**
